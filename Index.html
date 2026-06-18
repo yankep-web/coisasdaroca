@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coisas da Roça - Catálogo Interativo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Lora:ital,wght@0,400;0,700;1,400&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fdfaf6;
+        }
+
+        .font-serif {
+            font-family: 'Lora', serif;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #d97706;
+            border-radius: 10px;
+        }
+
+        .card-active {
+            border-color: #d97706;
+            background-color: #fffbeb;
+            transform: translateY(-2px);
+        }
+
+        .product-card {
+            transition: all 0.2s ease-in-out;
+        }
+    </style>
+</head>
+<body class="text-gray-800 leading-relaxed">
+
+    <!-- Chosen Palette: Fazenda Suave (Creme, Ambar, Marrom Rústico, Verde Floresta) -->
+    <!-- Application Structure Plan: Otimizado para conversão direta. A estrutura agora foca em: 1. Seleção Rápida (Grid de Produtos com filtros); 2. Fechamento de Pedido (Simulador dinâmico). Removido o gráfico de análise para simplificar a jornada do usuário no mobile. -->
+    <!-- Visualization & Content Choices: 
+        1. Grid de Produtos -> Organizar -> Apresentação clara de preços e descrições.
+        2. Filtros Dinâmicos -> Navegar -> Facilita encontrar itens específicos (Aves vs Temperos).
+        3. Calculadora de Pedido -> Síntese -> Soma valores e formata mensagem automática para WhatsApp.
+        Confirmado: Zero SVG, Zero Mermaid JS, Gráfico removido conforme solicitado.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <div class="max-w-5xl mx-auto px-4 py-8">
+        <!-- Cabeçalho -->
+        <header class="text-center mb-12">
+            <div class="inline-block bg-amber-100 text-amber-800 px-4 py-1 rounded-full text-sm font-bold mb-4 tracking-wide uppercase">
+                👨🏻‍🌾 Direto da Fazenda
+            </div>
+            <h1 class="text-5xl font-bold font-serif text-amber-900 mb-2">Coisas da Roça</h1>
+            <p class="text-lg text-gray-600 italic">Produtos caseiros, frescos e selecionados para sua mesa.</p>
+            <div class="mt-6 flex flex-wrap justify-center items-center gap-4 text-green-700 font-bold">
+                <span class="flex items-center gap-1">🛵 Entrega Grátis!</span>
+                <span class="hidden sm:inline text-gray-300">|</span>
+                <span class="flex items-center gap-1">📞 (64) 9954-3469</span>
+            </div>
+        </header>
+
+        <!-- Seção de Produtos -->
+        <section class="mb-16">
+            <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-amber-950 mb-2">Escolha seus Produtos</h2>
+                    <p class="text-gray-600">Toque nos itens abaixo para adicionar ao seu pedido.</p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="filterProducts('todos')" class="filter-btn px-5 py-2 rounded-xl bg-amber-800 text-white font-medium shadow-md transition-all">Todos</button>
+                    <button onclick="filterProducts('aves')" class="filter-btn px-5 py-2 rounded-xl bg-white border border-amber-200 text-amber-900 font-medium hover:bg-amber-50 transition-all">Aves/Carnes</button>
+                    <button onclick="filterProducts('laticinios')" class="filter-btn px-5 py-2 rounded-xl bg-white border border-amber-200 text-amber-900 font-medium hover:bg-amber-50 transition-all">Laticínios</button>
+                    <button onclick="filterProducts('temperos')" class="filter-btn px-5 py-2 rounded-xl bg-white border border-amber-200 text-amber-900 font-medium hover:bg-amber-50 transition-all">Temperos</button>
+                </div>
+            </div>
+
+            <div id="product-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- Conteúdo injetado pelo JavaScript -->
+            </div>
+        </section>
+
+        <!-- Resumo e Finalização -->
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+            <div class="lg:col-span-2 bg-amber-900 text-white p-8 rounded-3xl shadow-xl border-t-4 border-amber-600">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold">Resumo do Pedido</h2>
+                    <span id="item-count" class="bg-amber-700 px-3 py-1 rounded-lg text-sm">0 itens</span>
+                </div>
+                
+                <div id="cart-items" class="space-y-3 mb-8 max-h-80 overflow-y-auto custom-scrollbar pr-2">
+                    <div class="text-center py-8 text-amber-400/50 border-2 border-dashed border-amber-800 rounded-2xl italic">
+                        Selecione os produtos acima para montar seu carrinho...
+                    </div>
+                </div>
+
+                <div class="border-t border-amber-700 pt-6 flex flex-col sm:flex-row justify-between items-center gap-6">
+                    <div class="text-center sm:text-left">
+                        <span class="block text-amber-400 text-xs uppercase tracking-widest font-bold mb-1">Total para pagamento</span>
+                        <span id="total-price" class="text-5xl font-black">R$ 0,00</span>
+                    </div>
+                    <button onclick="sendOrder()" class="w-full sm:w-auto bg-green-500 hover:bg-green-400 text-white px-10 py-5 rounded-2xl font-black shadow-lg transform transition-transform active:scale-95 flex justify-center items-center gap-3 text-lg">
+                        Finalizar no WhatsApp 🚀
+                    </button>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <div class="bg-white p-8 rounded-3xl border border-amber-100 shadow-sm text-center">
+                    <div class="text-5xl mb-4">🏠</div>
+                    <h3 class="text-xl font-bold text-amber-900 mb-2">Entrega em Domicílio</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed">Entregamos com rapidez e cuidado. Frete grátis para toda a região informada pelo Otomar.</p>
+                </div>
+
+                <div class="bg-amber-50 p-8 rounded-3xl border border-amber-200 text-center">
+                    <h3 class="text-sm font-bold text-amber-700 uppercase tracking-widest mb-4">Atendimento Direto</h3>
+                    <div class="text-2xl font-black text-amber-950 mb-1">(64) 9954-3469</div>
+                    <p class="text-amber-800/70 text-sm font-medium">Otomar - Coisas da Roça</p>
+                    <div class="mt-6 flex justify-center gap-3 text-xl opacity-60">
+                        <span>🐓</span><span>🐖</span><span>🏕️</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="text-center text-gray-400 text-xs py-8 border-t border-gray-100">
+            &copy; 2024 Coisas da Roça - Qualidade e Tradição Rural. <br class="sm:hidden"> Todos os direitos reservados.
+        </footer>
+    </div>
+
+    <script>
+        const products = [
+            { id: 1, category: 'aves', name: 'Galinha Caipira', price: 75.00, desc: 'Limpa e cortada (unidade)', icon: '🐓' },
+            { id: 2, category: 'aves', name: 'Frango Melhorado', price: 48.00, desc: 'Unidade fresca', icon: '🍗' },
+            { id: 3, category: 'aves', name: 'Carne Murciça', price: 31.00, desc: 'Porco Caipira (kg)', icon: '🐖' },
+            { id: 4, category: 'aves', name: 'Toucinho Caipira', price: 27.00, desc: 'O quilo', icon: '🥓' },
+            { id: 5, category: 'laticinios', name: 'Ovos Melhorados', price: 33.00, desc: 'Cartela com 30 unidades', icon: '🥚' },
+            { id: 6, category: 'laticinios', name: 'Queijo Ralado', price: 49.00, desc: 'O quilo', icon: '🧀' },
+            { id: 7, category: 'temperos', name: 'Açafrão 1 Litro', price: 70.00, desc: 'Puro da terra', icon: '🏺' },
+            { id: 8, category: 'temperos', name: 'Açafrão 500ml', price: 40.00, desc: 'Puro da terra', icon: '🏺' },
+            { id: 9, category: 'temperos', name: 'Açafrão 200ml', price: 20.00, desc: 'Puro da terra', icon: '🏺' },
+            { id: 10, category: 'temperos', name: 'Pimenta Malaguetinha', price: 33.00, desc: 'No óleo (Garrafinha)', icon: '🌶️' },
+            { id: 11, category: 'temperos', name: 'Pimenta Malaguetona', price: 20.00, desc: 'No óleo (Garrafinha)', icon: '🌶️' },
+            { id: 12, category: 'temperos', name: 'Tempero Caseirinho', price: 15.00, desc: 'Sal, alho e bode (400g)', icon: '🧂' }
+        ];
+
+        let cart = [];
+        let currentFilter = 'todos';
+
+        function renderProducts() {
+            const grid = document.getElementById('product-grid');
+            grid.innerHTML = '';
+            
+            const filtered = currentFilter === 'todos' ? products : products.filter(p => p.category === currentFilter);
+            
+            filtered.forEach(p => {
+                const isSelected = cart.find(item => item.id === p.id);
+                const card = document.createElement('div');
+                card.className = `product-card p-6 rounded-2xl border-2 cursor-pointer ${isSelected ? 'card-active' : 'bg-white border-amber-50 shadow-sm hover:border-amber-200'}`;
+                card.onclick = () => toggleCart(p.id);
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="text-4xl bg-amber-50 w-14 h-14 flex items-center justify-center rounded-xl">${p.icon}</div>
+                        <div class="w-6 h-6 rounded-full border-2 ${isSelected ? 'bg-amber-600 border-amber-600' : 'border-gray-200'} flex items-center justify-center">
+                            ${isSelected ? '<span class="text-white text-[10px]">✓</span>' : ''}
+                        </div>
+                    </div>
+                    <h3 class="font-bold text-amber-950 text-lg leading-tight mb-1">${p.name}</h3>
+                    <p class="text-xs text-gray-400 mb-6">${p.desc}</p>
+                    <div class="flex justify-between items-center mt-auto">
+                        <span class="text-2xl font-black text-amber-800">R$ ${p.price.toFixed(2).replace('.', ',')}</span>
+                        <span class="text-[10px] font-bold uppercase tracking-widest ${isSelected ? 'text-amber-600' : 'text-gray-300'}">${isSelected ? 'No Carrinho' : 'Adicionar'}</span>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filterProducts(cat) {
+            currentFilter = cat;
+            const btns = document.querySelectorAll('.filter-btn');
+            btns.forEach(b => {
+                b.classList.remove('bg-amber-800', 'text-white');
+                b.classList.add('bg-white', 'text-amber-900', 'border-amber-200');
+            });
+            event.target.classList.add('bg-amber-800', 'text-white');
+            renderProducts();
+        }
+
+        function toggleCart(id) {
+            const product = products.find(p => p.id === id);
+            const index = cart.findIndex(item => item.id === id);
+            
+            if (index > -1) {
+                cart.splice(index, 1);
+            } else {
+                cart.push(product);
+            }
+            
+            updateCartUI();
+            renderProducts();
+        }
+
+        function updateCartUI() {
+            const container = document.getElementById('cart-items');
+            const totalEl = document.getElementById('total-price');
+            const countEl = document.getElementById('item-count');
+            
+            countEl.innerText = `${cart.length} ${cart.length === 1 ? 'item' : 'itens'}`;
+
+            if (cart.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-amber-400/50 border-2 border-dashed border-amber-800 rounded-2xl italic">
+                        Selecione os produtos acima para montar seu carrinho...
+                    </div>
+                `;
+                totalEl.innerText = 'R$ 0,00';
+                return;
+            }
+
+            container.innerHTML = '';
+            let total = 0;
+            
+            cart.forEach(item => {
+                total += item.price;
+                const div = document.createElement('div');
+                div.className = 'flex justify-between items-center bg-amber-950/40 p-4 rounded-2xl border border-amber-800/50 animate-in fade-in zoom-in duration-200';
+                div.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="text-2xl">${item.icon}</span>
+                        <div>
+                            <p class="font-bold text-white text-sm">${item.name}</p>
+                            <p class="text-[10px] text-amber-400 uppercase font-bold tracking-tighter">${item.desc}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span class="font-black text-amber-200">R$ ${item.price.toFixed(2).replace('.', ',')}</span>
+                        <button onclick="event.stopPropagation(); toggleCart(${item.id})" class="text-amber-600 hover:text-red-400 text-xl font-bold">×</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+
+            totalEl.innerText = `R$ ${total.toFixed(2).replace('.', ',')}`;
+        }
+
+        function sendOrder() {
+            if (cart.length === 0) {
+                alert('Opa! Seu carrinho está vazio. Selecione alguns produtos primeiro!');
+                return;
+            }
+
+            let text = `*PEDIDO - COISAS DA ROÇA* 👨🏻‍🌾\n\n`;
+            text += `Olá Otomar, selecionei estes itens no catálogo:\n\n`;
+            
+            let total = 0;
+            cart.forEach(item => {
+                text += `✅ *${item.name}* - R$ ${item.price.toFixed(2).replace('.', ',')}\n`;
+                total += item.price;
+            });
+            
+            text += `\n━━━━━━━━━━━━━━━\n`;
+            text += `💰 *TOTAL ESTIMADO: R$ ${total.toFixed(2).replace('.', ',')}*\n`;
+            text += `━━━━━━━━━━━━━━━\n\n`;
+            text += `🛵 _Entrega no PV!_`;
+            
+            const encoded = encodeURIComponent(text);
+            window.open(`https://wa.me/556499543469?text=${encoded}`, '_blank');
+        }
+
+        window.onload = renderProducts;
+    </script>
+</body>
+</html>
